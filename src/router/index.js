@@ -10,7 +10,7 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/dashboard", // root redirect
+      redirect: "/dashboard",
     },
     {
       path: "/dashboard",
@@ -18,14 +18,26 @@ const router = createRouter({
       children: [
         {
           path: "",
-          name: "dashboard",
+          name: "Dashboard",
           component: Dashboard,
           meta: { requiresAuth: true },
         },
         {
-          path: "products",
-          name: "products",
+          path: "/products",
+          name: "Product Listing Page",
           component: Products,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/products/create",
+          name: "Create Product",
+          component: () => import("@/views/dashboard/products/create.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "/products/:id/edit",
+          name: "Edit Product",
+          component: () => import("@/views/dashboard/products/edit.vue"),
           meta: { requiresAuth: true },
         },
       ],

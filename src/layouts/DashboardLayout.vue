@@ -18,10 +18,8 @@ const logout = () => {
 <template>
     <div class="min-h-screen flex bg-gray-100">
 
-        <!-- Overlay mobile -->
         <div v-if="sidebarOpen" class="fixed inset-0 bg-black/40 z-40 md:hidden" @click="sidebarOpen = false"></div>
 
-        <!-- Sidebar -->
         <aside :class="[
             'fixed md:static z-50 w-64 bg-red-500 shadow-lg min-h-screen transition-transform',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
@@ -38,15 +36,13 @@ const logout = () => {
 
                 <RouterLink to="/products" class="block px-4 py-2 rounded-lg hover:bg-white  hover:text-blue-500"
                     exact-active-class="bg-white text-blue-500">
-                    Products
+                    Product Listing Page
                 </RouterLink>
             </nav>
         </aside>
 
-        <!-- Content -->
         <div class="flex-1 flex flex-col">
 
-            <!-- Header -->
             <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
@@ -59,7 +55,6 @@ const logout = () => {
                     </h2>
                 </div>
 
-                <!-- Profile dropdown -->
                 <div class="relative">
 
                     <button @click="dropdownOpen = !dropdownOpen" class="flex cursor-pointer items-center gap-2">
@@ -69,7 +64,6 @@ const logout = () => {
                         </span>
                     </button>
 
-                    <!-- Dropdown -->
                     <Transition enter-active-class="transition duration-200 ease-out"
                         enter-from-class="opacity-0 scale-95 translate-y-2"
                         enter-to-class="opacity-100 scale-100 translate-y-0"
@@ -88,7 +82,6 @@ const logout = () => {
 
             </header>
 
-            <!-- Page -->
             <main class="p-6 flex-1">
                 <RouterView />
             </main>
