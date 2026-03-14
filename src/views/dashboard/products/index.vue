@@ -103,9 +103,9 @@ onMounted(() => {
 
 <template>
     <div>
-        <!-- Filter Bar -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6 flex  gap-3 items-center justify-between flex-wrap">
-            <div class="flex flex-wrap gap-3 w-full sm:w-auto ">
+        <div
+            class="bg-white p-4  rounded-lg shadow mb-6 flex w-full gap-3 items-center justify-between flex-col md:flex-row ">
+            <div class="flex flex-wrap gap-3 w-full  ">
                 <button @click="resetFilter"
                     class="bg-red-500 text-white hover:bg-red-600 w-10 h-10 flex justify-center items-center cursor-pointer rounded-full transition self-start sm:self-auto shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 50 50"
@@ -116,10 +116,10 @@ onMounted(() => {
                 </button>
 
                 <input v-model="search" type="text" placeholder="Search products..."
-                    class="flex-1 min-w-sm border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition" />
+                    class=" w-full md:w-sm border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition" />
 
                 <select v-model="category"
-                    class="w-xs border rounded-lg px-3 py-2 text-sm border-gray-300 cursor-pointer text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400 transition appearance-none">
+                    class="md:w-xs w-full border rounded-lg px-3 py-2 text-sm border-gray-300 cursor-pointer text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400 transition appearance-none">
                     <option value="">Select a category</option>
                     <option v-for="cat in categoryList" :key="cat.id" :value="cat.id">
                         {{ cat.name }}
@@ -135,7 +135,7 @@ onMounted(() => {
             </div>
 
             <RouterLink to='/products/create'
-                class="bg-black text-white hover:bg-black/70 px-4 py-2 rounded-lg transition self-start sm:self-auto">
+                class="bg-black text-white shrink-0 hover:bg-black/70 px-4 py-2 rounded-lg transition self-start sm:self-auto">
                 Add Product
             </RouterLink>
         </div>
