@@ -6,6 +6,11 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
   const token = ref(localStorage.getItem("token") || null);
   const isAuthenticated = computed(() => !!token.value);
+  const storedUser = localStorage.getItem("user");
+
+  if (storedUser) {
+    user.value = JSON.parse(storedUser);
+  }
 
   const login = async (email, password) => {
     try {
@@ -38,7 +43,14 @@ export const useAuthStore = defineStore("auth", () => {
         },
       );
 
-      user.value = res.data;
+      user.value = {
+        id: res.data.id,
+        email: res.data.email,
+        name: res.data.name,
+        avatar: res.data.avatar,
+      };
+
+      localStorage.setItem("user", JSON.stringify(user.value));
     } catch (error) {
       console.error("Get profile error", error);
     }
@@ -48,6 +60,7 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = null;
     user.value = null;
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   return {
