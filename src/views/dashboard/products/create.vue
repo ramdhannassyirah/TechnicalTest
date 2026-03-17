@@ -1,8 +1,8 @@
 <script setup>
-import axios from "axios"
 import { ref, reactive, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import api from '@/utils/axios'
 
 
 const router = useRouter()
@@ -35,7 +35,7 @@ const showCancelConfirm = ref(false)
 // Fetch categories dari API
 onMounted(async () => {
     try {
-        const res = await axios.get("https://api.escuelajs.co/api/v1/categories")
+        const res = await api.get("/categories")
         categories.value = res.data
     } catch (e) {
         console.error("Failed to load categories", e)
@@ -57,7 +57,7 @@ const handleFileChange = async (e) => {
     try {
         const formData = new FormData()
         formData.append("file", file)
-        const res = await axios.post("https://api.escuelajs.co/api/v1/files/upload", formData, {
+        const res = await api.post("/files/upload", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         })
         imageUrl.value = res.data.location
@@ -112,7 +112,7 @@ const confirmSave = async () => {
     showSaveConfirm.value = false
     isSubmitting.value = true
     try {
-        await axios.post("https://api.escuelajs.co/api/v1/products/", {
+        await api.post("/products/", {
             title: form.title,
             price: Number(form.price),
             description: form.description,

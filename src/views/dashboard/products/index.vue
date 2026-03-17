@@ -1,17 +1,18 @@
 <script setup>
-import axios from "axios"
 import { ref, computed, watch, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import BasePagination from "@/components/BasePagination.vue"
 import { RouterLink } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import api from '@/utils/axios'
+import { PAGINATION } from "@/constants"
 
 const route = useRoute()
 const router = useRouter()
 
 const products = ref([])
 const totalProductsFiltered = ref(0)
-const perPage = 5
+const perPage = PAGINATION.DEFAULT_LIMIT
 const search = ref("")
 const category = ref("")
 const categoryList = ref([])
@@ -27,7 +28,7 @@ const offset = computed(() => (currentPage.value - 1) * perPage)
 
 onMounted(async () => {
     try {
-        const res = await axios.get("https://api.escuelajs.co/api/v1/categories")
+        const res = await api.get("/categories")
         categoryList.value = res.data
     } catch (e) {
         console.error("Failed to load categoryList", e)
@@ -44,14 +45,14 @@ const fetchProducts = async () => {
     if (maxPrice.value) query += `&price_max=${maxPrice.value}`
 
     try {
-        const res = await axios.get(`https://api.escuelajs.co/api/v1/products${query}`)
+        const res = await api.get(`/products${query}`)
         products.value = res.data
         let totalQuery = `?`
         if (search.value) totalQuery += `title=${search.value}&`
         if (category.value) totalQuery += `categoryId=${category.value}&`
         if (minPrice.value) totalQuery += `price_min=${minPrice.value}&`
         if (maxPrice.value) totalQuery += `price_max=${maxPrice.value}&`
-        const totalRes = await axios.get(`https://api.escuelajs.co/api/v1/products${totalQuery}`)
+        const totalRes = await api.get(`/products${totalQuery}`)
         totalProductsFiltered.value = totalRes.data.length
 
     } catch (err) {
@@ -65,7 +66,7 @@ const fetchProducts = async () => {
 watch([search, category, minPrice, maxPrice], () => {
     router.push({ query: { page: 1 } })
     fetchProducts()
-})
+}, 500)
 
 watch(() => route.query.page, () => {
     fetchProducts()
@@ -86,7 +87,7 @@ const resetFilter = () => {
 const confirmDelete = async () => {
     if (productToDelete.value) {
         try {
-            await axios.delete(`https://api.escuelajs.co/api/v1/products/${productToDelete.value}`)
+            await api.delete(`/products/${productToDelete.value}`)
             showConfirm.value = false
             productToDelete.value = null
             fetchProducts()

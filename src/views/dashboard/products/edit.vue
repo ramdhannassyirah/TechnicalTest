@@ -1,8 +1,8 @@
 <script setup>
-import axios from "axios"
 import { ref, reactive, onMounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import api from '@/utils/axios'
 
 
 const router = useRouter()
@@ -38,8 +38,8 @@ const showCancelConfirm = ref(false)
 onMounted(async () => {
     try {
         const [productRes, categoryRes] = await Promise.all([
-            axios.get(`https://api.escuelajs.co/api/v1/products/${productId}`),
-            axios.get("https://api.escuelajs.co/api/v1/categories"),
+            api.get(`/products/${productId}`),
+            api.get("/categories"),
         ])
 
         const product = productRes.data
@@ -72,7 +72,7 @@ const handleFileChange = async (e) => {
     try {
         const formData = new FormData()
         formData.append("file", file)
-        const res = await axios.post("https://api.escuelajs.co/api/v1/files/upload", formData, {
+        const res = await api.post("/files/upload", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         })
         imageUrl.value = res.data.location
@@ -129,7 +129,7 @@ const confirmSave = async () => {
     showSaveConfirm.value = false
     isSubmitting.value = true
     try {
-        await axios.put(`https://api.escuelajs.co/api/v1/products/${Number(productId)}`, {
+        await api.put(`/products/${Number(productId)}`, {
             title: form.title,
             price: Number(form.price),
             description: form.description,
