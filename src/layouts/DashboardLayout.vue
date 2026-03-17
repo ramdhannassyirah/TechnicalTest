@@ -46,7 +46,7 @@ const logout = () => {
             <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                    <button class="md:hidden" @click="sidebarOpen = !sidebarOpen">
+                    <button class="md:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="Toggle menu sidebar">
                         ☰
                     </button>
 

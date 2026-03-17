@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
-import axios from "axios";
+import api from "@/utils/axios";
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
@@ -14,16 +14,12 @@ export const useAuthStore = defineStore("auth", () => {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post(
-        "https://api.escuelajs.co/api/v1/auth/login",
-        {
-          email,
-          password,
-        },
-      );
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
       token.value = res.data.access_token;
-
       localStorage.setItem("token", token.value);
 
       await getProfile();
@@ -34,14 +30,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const getProfile = async () => {
     try {
-      const res = await axios.get(
-        "https://api.escuelajs.co/api/v1/auth/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
-        },
-      );
+      const res = await api.get("/auth/profile");
 
       user.value = {
         id: res.data.id,

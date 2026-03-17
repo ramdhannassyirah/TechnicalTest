@@ -26,7 +26,7 @@ const submit = async () => {
         router.push("/dashboard")
         isLoading.value = false
     } else {
-        error.value = "Email atau password salah"
+        error.value = "Login gagal. Silakan coba lagi."
         isLoading.value = false
     }
 }
