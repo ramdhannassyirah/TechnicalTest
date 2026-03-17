@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { useRoute, useRouter, RouterLink } from "vue-router"
 import BasePagination from "@/components/BasePagination.vue"
-import { RouterLink } from 'vue-router'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import api from '@/utils/axios'
 import { PAGINATION } from "@/constants"
+import { watchDebounced } from '@vueuse/core'
 
 const route = useRoute()
 const router = useRouter()
@@ -63,14 +63,14 @@ const fetchProducts = async () => {
     loading.value = false
 }
 
-watch([search, category, minPrice, maxPrice], () => {
+watchDebounced([search, category, minPrice, maxPrice], () => {
     router.push({ query: { page: 1 } })
     fetchProducts()
-}, 500)
+}, { debounce: 300 })
 
 watch(() => route.query.page, () => {
     fetchProducts()
-})
+}, { deep: true })
 
 const changePage = (page) => {
     router.push({ query: { page } })

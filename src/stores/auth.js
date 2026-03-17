@@ -1,7 +1,7 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import api from "@/utils/axios";
-
+import NProgress from "nprogress";
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
   const token = ref(localStorage.getItem("token") || null);
@@ -13,6 +13,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const login = async (email, password) => {
+    NProgress.start();
     try {
       const res = await api.post("/auth/login", {
         email,
@@ -25,6 +26,8 @@ export const useAuthStore = defineStore("auth", () => {
       await getProfile();
     } catch (error) {
       console.error("Login gagal", error);
+    } finally {
+      NProgress.done();
     }
   };
 
