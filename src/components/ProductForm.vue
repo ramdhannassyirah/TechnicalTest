@@ -1,14 +1,14 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive, onMounted, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import api from '@/utils/axios'
 
-
 const router = useRouter()
 const route = useRoute()
 
-const productId = route.params.id
+const productId = computed(() => route.params.id)
+const isEdit = computed(() => !!productId.value)
 
 const form = reactive({
     title: "",
@@ -25,11 +25,11 @@ const errors = reactive({
     image: "",
 })
 
+const imageFile = ref(null)
 const imagePreview = ref("")
 const imageUrl = ref("")
 const isUploading = ref(false)
 const isSubmitting = ref(false)
-const isLoading = ref(true)
 const categories = ref([])
 
 const showSaveConfirm = ref(false)
@@ -37,113 +37,130 @@ const showCancelConfirm = ref(false)
 
 onMounted(async () => {
     try {
-        const [productRes, categoryRes] = await Promise.all([
-            api.get(`/products/${productId}`),
+        const [catRes] = await Promise.all([
             api.get("/categories"),
         ])
+        categories.value = catRes.data
 
-        const product = productRes.data
-        form.title = product.title
-        form.price = product.price
-        form.description = product.description
-        form.categoryId = product.category?.id ?? ""
-        imageUrl.value = product.images?.[0] ?? ""
-        imagePreview.value = product.images?.[0] ?? ""
+        if (isEdit.value) {
+            const res = await api.get(`/products/${productId.value}`)
+            const data = res.data
+            form.title = data.title
+            form.price = data.price
+            form.description = data.description
+            form.categoryId = data.category?.id ?? ""
+            imageUrl.value = data.images?.[0] ?? ""
+            imagePreview.value = data.images?.[0] ?? ""
+        }
 
-        categories.value = categoryRes.data
     } catch (e) {
-        console.error("Failed to load data", e)
-        alert("Failed to load product data.")
-        router.push("/products")
-    } finally {
-        isLoading.value = false
+        console.error(e)
     }
 })
+
 
 const handleFileChange = async (e) => {
     const file = e.target.files[0]
     if (!file) return
 
     imagePreview.value = URL.createObjectURL(file)
+    imageFile.value = file
     imageUrl.value = ""
     errors.image = ""
-    isUploading.value = true
 
+    isUploading.value = true
     try {
         const formData = new FormData()
         formData.append("file", file)
+
         const res = await api.post("/files/upload", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         })
+
         imageUrl.value = res.data.location
     } catch (e) {
-        errors.image = "Failed to upload image. Please try again."
+        errors.image = "Failed to upload image"
         imagePreview.value = ""
     } finally {
         isUploading.value = false
     }
 }
 
+
 const validate = () => {
     let valid = true
-    errors.title = ""
-    errors.price = ""
-    errors.description = ""
-    errors.categoryId = ""
-    errors.image = ""
+
+    Object.keys(errors).forEach(k => errors[k] = "")
 
     if (!form.title.trim()) {
         errors.title = "Title is required"
         valid = false
     }
+
     if (!form.price) {
         errors.price = "Price is required"
         valid = false
     } else if (isNaN(form.price) || Number(form.price) <= 0) {
-        errors.price = "Price must be a positive number"
+        errors.price = "Price must be positive"
         valid = false
     }
+
     if (!form.description.trim()) {
         errors.description = "Description is required"
         valid = false
     }
+
     if (!form.categoryId) {
         errors.categoryId = "Category is required"
         valid = false
     }
+
     if (!imageUrl.value) {
         errors.image = isUploading.value
-            ? "Please wait, image is still uploading"
-            : "Product image is required"
+            ? "Wait image uploading"
+            : "Image required"
         valid = false
     }
+
     return valid
 }
+
 
 const onSaveClick = () => {
     if (!validate()) return
     showSaveConfirm.value = true
 }
 
+
 const confirmSave = async () => {
     showSaveConfirm.value = false
     isSubmitting.value = true
+
     try {
-        await api.put(`/products/${Number(productId)}`, {
+        const payload = {
             title: form.title,
             price: Number(form.price),
             description: form.description,
             categoryId: Number(form.categoryId),
             images: [imageUrl.value],
-        })
+        }
+
+        if (isEdit.value) {
+            await api.put(`/products/${productId.value}`, payload)
+        } else {
+            await api.post("/products", payload)
+        }
+
         router.push("/products")
+
     } catch (e) {
         console.error(e)
-        alert("Failed to update product. Please try again.")
+        alert("Failed to save product")
     } finally {
         isSubmitting.value = false
     }
 }
+
 
 const onCancelClick = () => {
     showCancelConfirm.value = true
@@ -253,13 +270,17 @@ const confirmCancel = () => {
 
                     <p v-if="errors.image" class="text-red-500 text-xs mt-1">{{ errors.image }}</p>
                     <p v-if="isUploading" class="text-red-500 text-xs mt-1">Uploading image...</p>
-                    <p v-if="imageUrl && !isUploading" class="text-green-600 text-xs mt-1">Image ready</p>
+                    <p v-if="imageUrl && !isUploading" class="text-green-600 text-xs mt-1">Image uploaded successfully
+                    </p>
                 </div>
 
                 <div class="flex gap-3 pt-2">
                     <button type="submit" :disabled="isSubmitting || isUploading"
-                        class="flex-1 bg-red-600 text-white hover:bg-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed px-6 py-2.5 rounded-lg transition font-medium text-sm">
-                        {{ isSubmitting ? "Saving..." : "Save Product" }}
+                        class="flex-1 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 px-6 py-2.5 rounded-lg">
+                        {{ isSubmitting
+                            ? (isEdit ? "Updating..." : "Saving...")
+                            : (isEdit ? "Update Product" : "Save Product")
+                        }}
                     </button>
                     <button type="button" @click="onCancelClick"
                         class="flex-1 border border-gray-300 text-gray-700 cursor-pointer hover:bg-gray-50 px-6 py-2.5 rounded-lg transition font-medium text-sm">
@@ -272,10 +293,11 @@ const confirmCancel = () => {
     </div>
 
     <ConfirmDialog v-model:show="showSaveConfirm" title="Save Product?"
-        message="Are you sure you want to update this product?" confirmLabel="Yes, Save" cancelLabel="Back to Form"
+        message="Are you sure you want to create this product?" confirmLabel="Yes, Save" cancelLabel="Back to Form"
         @confirm="confirmSave" @cancel="showSaveConfirm = false" :danger="false" />
 
     <ConfirmDialog v-model:show="showCancelConfirm" title="Discard Changes?"
         message="You will lose all unsaved data. Are you sure you want to cancel?" confirmLabel="Yes, Discard"
         cancelLabel="Keep Editing" @confirm="confirmCancel" @cancel="showCancelConfirm = false" :danger="true" />
+
 </template>
